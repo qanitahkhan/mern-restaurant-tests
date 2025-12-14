@@ -1,35 +1,63 @@
-FROM python:3.9-slim
+FROM node:18-slim
 
-# Install Chrome and ChromeDriver
+# Install dependencies for Puppeteer
 RUN apt-get update && apt-get install -y \
     wget \
-    unzip \
     gnupg \
-    curl \
-    && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
-    && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list \
-    && apt-get update \
-    && apt-get install -y google-chrome-stable \
+    ca-certificates \
+    fonts-liberation \
+    libappindicator3-1 \
+    libasound2 \
+    libatk-bridge2.0-0 \
+    libatk1.0-0 \
+    libc6 \
+    libcairo2 \
+    libcups2 \
+    libdbus-1-3 \
+    libexpat1 \
+    libfontconfig1 \
+    libgbm1 \
+    libgcc1 \
+    libglib2.0-0 \
+    libgtk-3-0 \
+    libnspr4 \
+    libnss3 \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
+    libstdc++6 \
+    libx11-6 \
+    libx11-xcb1 \
+    libxcb1 \
+    libxcomposite1 \
+    libxcursor1 \
+    libxdamage1 \
+    libxext6 \
+    libxfixes3 \
+    libxi6 \
+    libxrandr2 \
+    libxrender1 \
+    libxss1 \
+    libxtst6 \
+    lsb-release \
+    xdg-utils \
+    --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
-
-# Install ChromeDriver
-RUN CHROMEDRIVER_VERSION=$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE) && \
-    wget -O /tmp/chromedriver.zip https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip && \
-    unzip /tmp/chromedriver.zip -d /usr/local/bin/ && \
-    rm /tmp/chromedriver.zip && \
-    chmod +x /usr/local/bin/chromedriver
 
 # Set working directory
 WORKDIR /app
 
-# Copy requirements file
-COPY requirements.txt .
+# Copy package files
+COPY package*.json ./
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Install dependencies
+RUN npm install
 
 # Copy test files
 COPY . .
 
+# Set environment variables
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=false
+ENV HEADLESS=true
+
 # Run tests
-CMD ["pytest", "-v", "--html=test-results/report.html", "--junit-xml=test-results/results.xml"]
+CMD ["npx", "mocha", "test.js", "--reporter", "spec"]
