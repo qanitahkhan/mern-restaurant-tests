@@ -1,0 +1,14 @@
+{
+  "name": "restaurant-reservation-tests",
+  "version": "1.0.0",
+  "description": "Selenium tests for restaurant reservation system",
+  "scripts": {
+    "test": "mocha test.js --reporter spec",
+    "test:headless": "HEADLESS=true mocha test.js --reporter spec"
+  },
+  "devDependencies": {
+    "chromedriver": "^122.0.0",
+    "mocha": "^10.8.2",
+    "selenium-webdriver": "^4.39.0"
+  }
+}
