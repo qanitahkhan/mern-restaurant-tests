@@ -21,7 +21,6 @@ pipeline {
                 script {
                     echo 'Running Selenium Tests in Docker Container with Node.js...'
                     
-                    // Use Node.js 18 image and install Chrome inside
                     docker.image('node:18').inside('--shm-size=2g -u root') {
                         sh '''
                             echo "=== Installing Chrome dependencies ==="
@@ -65,7 +64,7 @@ pipeline {
         }
         success {
             emailext (
-                subject: "✅ Jenkins Pipeline SUCCESS - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                subject: "Jenkins Pipeline SUCCESS - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                 body: """
                     <h2>Test Execution Successful!</h2>
                     <p><strong>Job:</strong> ${env.JOB_NAME}</p>
@@ -83,10 +82,21 @@ pipeline {
         }
         failure {
             emailext (
-                subject: "❌ Jenkins Pipeline FAILED - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                subject: "Jenkins Pipeline FAILED - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                 body: """
                     <h2>Test Execution Failed!</h2>
                     <p><strong>Job:</strong> ${env.JOB_NAME}</p>
                     <p><strong>Build Number:</strong> ${env.BUILD_NUMBER}</p>
                     <p><strong>Build URL:</strong> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
                     <p><strong>Triggered by:</strong> ${env.GIT_COMMITTER_EMAIL}</p>
+                    <p><strong>Status:</strong> <span style="color: red;">FAILURE</span></p>
+                    <hr>
+                    <p>Some tests failed. Please check the console output for details.</p>
+                    <p><a href="${env.BUILD_URL}console">View Console Output</a></p>
+                """,
+                to: "${env.GIT_COMMITTER_EMAIL}",
+                mimeType: 'text/html'
+            )
+        }
+    }
+}
